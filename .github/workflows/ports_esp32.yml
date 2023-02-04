@@ -1,6 +1,7 @@
 name: esp32 port
 
 on:
+  workflow_dispatch:
   push:
   pull_request:
     paths:
@@ -26,6 +27,11 @@ jobs:
       run: source tools/ci.sh && ci_esp32_idf402_setup
     - name: Build
       run: source tools/ci.sh && ci_esp32_build
+    - name: Upload firmwares
+      uses: actions/upload-artifact@v3
+      with:
+        name: micropython-esp32-idf402-firmwares
+        path: ports/esp32/build-*/firmware.bin
 
   build_idf44:
     runs-on: ubuntu-20.04
@@ -35,3 +41,8 @@ jobs:
       run: source tools/ci.sh && ci_esp32_idf44_setup
     - name: Build
       run: source tools/ci.sh && ci_esp32_build
+    - name: Upload firmwares
+      uses: actions/upload-artifact@v3
+      with:
+        name: micropython-esp32-idf44-firmwares
+        path: ports/esp32/build-*/firmware.bin
