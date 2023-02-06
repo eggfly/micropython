@@ -136,13 +136,15 @@ function ci_esp32_build {
         USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
         FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
     if [ -d $IDF_PATH/components/esp32c3 ]; then
-        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
+        make ${MAKEOPTS} -j4 -C ports/esp32 BOARD=GENERIC_C3
+        make ${MAKEOPTS} -j4 -C ports/esp32 BOARD=GENERIC_C3_USB
     fi
     if [ -d $IDF_PATH/components/esp32s2 ]; then
-        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
+        make ${MAKEOPTS} -j4 -C ports/esp32 BOARD=GENERIC_S2
     fi
     if [ -d $IDF_PATH/components/esp32s3 ]; then
-        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S3
+        make ${MAKEOPTS} -j4 -C ports/esp32 BOARD=GENERIC_S3
+        make ${MAKEOPTS} -j4 -C ports/esp32 BOARD=GENERIC_S3_USB
     fi
 
     # Test building native .mpy with xtensawin architecture.
