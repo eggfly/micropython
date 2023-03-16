@@ -48,6 +48,27 @@ set(MICROPY_SOURCE_DRIVERS
 )
 
 set(MICROPY_SOURCE_PORT
+${PROJECT_DIR}/arduino_libs/Adafruit_BusIO/Adafruit_I2CDevice.cpp
+${PROJECT_DIR}/arduino_libs/Adafruit_BusIO/Adafruit_SPIDevice.cpp
+${PROJECT_DIR}/arduino_libs/Adafruit_SHARP_Memory_Display/Adafruit_SharpMem.cpp
+${PROJECT_DIR}/arduino_libs/RTClib/RTC_PCF8563.cpp
+${PROJECT_DIR}/arduino_libs/RTClib/RTClib.cpp
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-cpu.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-gpio.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-i2c-slave.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-i2c.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-matrix.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-misc.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-spi.c
+${PROJECT_DIR}/arduino_mpy_mixup/esp32-hal-uart.c
+${PROJECT_DIR}/arduino_mpy_mixup/framework_entry.c
+${PROJECT_DIR}/arduino_mpy_mixup/Print.cpp
+${PROJECT_DIR}/arduino_mpy_mixup/SPI.cpp
+${PROJECT_DIR}/arduino_mpy_mixup/stdlib_noniso.c
+${PROJECT_DIR}/arduino_mpy_mixup/Stream.cpp
+${PROJECT_DIR}/arduino_mpy_mixup/watch_clock_main.cpp
+${PROJECT_DIR}/arduino_mpy_mixup/Wire.cpp
+${PROJECT_DIR}/arduino_mpy_mixup/WString.cpp
     ${PROJECT_DIR}/main.c
     ${PROJECT_DIR}/uart.c
     ${PROJECT_DIR}/usb.c
@@ -169,6 +190,10 @@ idf_component_register(
         ${MICROPY_INC_USERMOD}
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
+        ${MICROPY_ARDUINO_MPY_MIXUP_DIR}
+        ${MICROPY_ARDUINO_LIB_ADAFRUIT_BUS_IO_DIR}
+        ${MICROPY_ARDUINO_LIB_ADAFRUIT_SHARP_DIR}
+        ${MICROPY_ARDUINO_LIB_RTCLIB_DIR}
         ${CMAKE_BINARY_DIR}
     REQUIRES
         ${IDF_COMPONENTS}

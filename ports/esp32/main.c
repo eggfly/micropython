@@ -38,6 +38,8 @@
 #include "soc/cpu.h"
 #include "esp_log.h"
 
+#include "arduino_mpy_mixup/framework_entry.h"
+
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/spiram.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
@@ -84,6 +86,7 @@ int vprintf_null(const char *format, va_list ap) {
 }
 
 void mp_task(void *pvParameter) {
+    framework_entry();
     volatile uint32_t sp = (uint32_t)get_sp();
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
