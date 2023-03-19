@@ -1,11 +1,4 @@
-/* Hello World Example
 
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +30,9 @@ RTC_PCF8563 rtc;
 
 extern "C" void watch_clock_main(void)
 {
-    printf("Hello world!\n");
+    auto bootTime1 = millis();
+    printf("DONE!!! In %d ms\n", bootTime1);
+    // printf("Hello world!\n");
 
     Wire.begin(21, 20); // sda=  /scl=
 
@@ -45,32 +40,33 @@ extern "C" void watch_clock_main(void)
     {
         printf("Couldn't find RTC\n");
         fflush(stdout);
-        while (1)
+        while (1){
             delay(10);
+        }
     }
 
-    if (rtc.lostPower())
-    {
-        printf("RTC is NOT initialized, let's set the time!\n");
-        // When time needs to be set on a new device, or after a power loss, the
-        // following line sets the RTC to the date & time this sketch was compiled
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-        // This line sets the RTC with an explicit date & time, for example to set
-        // January 21, 2014 at 3am you would call:
-        // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-        //
-        // Note: allow 2 seconds after inserting battery or applying external power
-        // without battery before calling adjust(). This gives the PCF8523's
-        // crystal oscillator time to stabilize. If you call adjust() very quickly
-        // after the RTC is powered, lostPower() may still return true.
-    }
+    // if (rtc.lostPower())
+    // {
+    //     printf("RTC is NOT initialized, let's set the time!\n");
+    //     // When time needs to be set on a new device, or after a power loss, the
+    //     // following line sets the RTC to the date & time this sketch was compiled
+    //     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    //     // This line sets the RTC with an explicit date & time, for example to set
+    //     // January 21, 2014 at 3am you would call:
+    //     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+    //     //
+    //     // Note: allow 2 seconds after inserting battery or applying external power
+    //     // without battery before calling adjust(). This gives the PCF8523's
+    //     // crystal oscillator time to stabilize. If you call adjust() very quickly
+    //     // after the RTC is powered, lostPower() may still return true.
+    // }
     rtc.start();
 
     char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
     DateTime now = rtc.now();
 
-    printf("%04d-%02d-%02d(%s) %02d:%02d:%02d\n", now.year(), now.month(), now.day(), daysOfTheWeek[now.dayOfTheWeek()], now.hour(), now.minute(), now.second());
+    // printf("%04d-%02d-%02d(%s) %02d:%02d:%02d\n", now.year(), now.month(), now.day(), daysOfTheWeek[now.dayOfTheWeek()], now.hour(), now.minute(), now.second());
 
     // pinMode(SHARP_DISP, OUTPUT);
     // digitalWrite(SHARP_DISP, HIGH);
@@ -79,11 +75,9 @@ extern "C" void watch_clock_main(void)
     // start & clear the display
     display.begin();
     display.clearDisplay();
-
-    delay(500);
     display.refresh();
-
-    printf("DONE!!!\n");
+    auto bootTime = millis();
+    printf("DONE!!! In %d ms\n", bootTime);
 
     /* Print chip information */
     esp_chip_info_t chip_info;

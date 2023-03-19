@@ -86,7 +86,6 @@ int vprintf_null(const char *format, va_list ap) {
 }
 
 void mp_task(void *pvParameter) {
-    framework_entry();
     volatile uint32_t sp = (uint32_t)get_sp();
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
@@ -236,6 +235,9 @@ void boardctrl_startup(void) {
 }
 
 void app_main(void) {
+    // Arduino framework entry
+    framework_entry();
+
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();

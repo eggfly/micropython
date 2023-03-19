@@ -242,7 +242,6 @@ void Adafruit_SharpMem::clearDisplay() {
   TOGGLE_VCOM;
   digitalWrite(_cs, LOW);
   spidev->endTransaction();
-  printf("clearDisplay\n");
 }
 
 /**************************************************************************/
