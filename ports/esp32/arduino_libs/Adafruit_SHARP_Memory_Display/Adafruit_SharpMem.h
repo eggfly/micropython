@@ -18,7 +18,7 @@ All text above, and the splash screen must be included in any redistribution
 #ifndef LIB_ADAFRUIT_SHARPMEM
 #define LIB_ADAFRUIT_SHARPMEM
 
-// #include <Adafruit_GFX.h>
+#include <Adafruit_GFX.h>
 #include <Adafruit_SPIDevice.h>
 #include <Arduino.h>
 
@@ -34,7 +34,7 @@ All text above, and the splash screen must be included in any redistribution
  * @brief Class to control a Sharp memory display
  *
  */
-class Adafruit_SharpMem {
+class Adafruit_SharpMem : public Adafruit_GFX {
 public:
   Adafruit_SharpMem(uint8_t clk, uint8_t mosi, uint8_t cs, uint16_t w = 96,
                     uint16_t h = 96, uint8_t color_depth_bits = 1,
@@ -43,8 +43,8 @@ public:
                     uint16_t h = 96, uint8_t color_depth_bits = 1,
                     uint32_t freq = 2000000);
   boolean begin();
-  // void drawPixel(int16_t x, int16_t y, uint16_t color);
-  // uint8_t getPixel(uint16_t x, uint16_t y);
+  void drawPixel(int16_t x, int16_t y, uint16_t color);
+  uint8_t getPixel(uint16_t x, uint16_t y);
   void clearDisplay();
   void refresh(void);
   void clearDisplayBuffer();
@@ -52,8 +52,6 @@ public:
 private:
   Adafruit_SPIDevice *spidev = NULL;
   uint8_t *sharpmem_buffer = NULL;
-  uint16_t _width;
-  uint16_t _height;
   uint8_t _cs;
   uint8_t _sharpmem_vcom;
   uint8_t _color_depth_bits;

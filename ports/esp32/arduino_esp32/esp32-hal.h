@@ -79,7 +79,7 @@ void yield(void);
 #include "esp32-hal-gpio.h"
 // #include "esp32-hal-touch.h"
 // #include "esp32-hal-dac.h"
-// #include "esp32-hal-adc.h"
+#include "esp32-hal-adc.h"
 #include "esp32-hal-spi.h"
 // #include "esp32-hal-i2c.h"
 // #include "esp32-hal-ledc.h"

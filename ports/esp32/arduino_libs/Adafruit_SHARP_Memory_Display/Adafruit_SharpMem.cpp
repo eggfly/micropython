@@ -18,9 +18,6 @@ All text above, and the splash screen must be included in any redistribution
 
 #include "Adafruit_SharpMem.h"
 
-#define WIDTH (this->_width)
-#define HEIGHT (this->_height)
-
 #ifndef _swap_int16_t
 #define _swap_int16_t(a, b)                                                    \
   {                                                                            \
@@ -74,9 +71,8 @@ All text above, and the splash screen must be included in any redistribution
  */
 Adafruit_SharpMem::Adafruit_SharpMem(uint8_t clk, uint8_t mosi, uint8_t cs,
                                      uint16_t width, uint16_t height,
-                                     uint8_t color_depth_bits, uint32_t freq) {
-                                      _width = width;
-                                      _height = height;
+                                     uint8_t color_depth_bits, uint32_t freq)
+    : Adafruit_GFX(width, height) {
   _cs = cs;
   _color_depth_bits = color_depth_bits;
   if (spidev) {
@@ -98,9 +94,8 @@ Adafruit_SharpMem::Adafruit_SharpMem(uint8_t clk, uint8_t mosi, uint8_t cs,
  */
 Adafruit_SharpMem::Adafruit_SharpMem(SPIClass *theSPI, uint8_t cs,
                                      uint16_t width, uint16_t height,
-                                     uint8_t color_depth_bits, uint32_t freq) {
-                                      _width = width;
-                                      _height = height;
+                                     uint8_t color_depth_bits, uint32_t freq)
+    : Adafruit_GFX(width, height) {
   _cs = cs;
   _color_depth_bits = color_depth_bits;
   if (spidev) {
@@ -132,12 +127,13 @@ boolean Adafruit_SharpMem::begin(void) {
   if (!sharpmem_buffer)
     return false;
 
-  // setRotation(0);
+  setRotation(0);
+
   return true;
 }
 
 // 1<<n is a costly operation on AVR -- table usu. smaller & faster
-static const uint8_t set[] = {1, 2, 4, 8, 16, 32, 64, 128},
+static const uint8_t PROGMEM set[] = {1, 2, 4, 8, 16, 32, 64, 128},
                              clr[] = {(uint8_t)~1,  (uint8_t)~2,  (uint8_t)~4,
                                       (uint8_t)~8,  (uint8_t)~16, (uint8_t)~32,
                                       (uint8_t)~64, (uint8_t)~128};
@@ -155,34 +151,34 @@ static const uint8_t set[] = {1, 2, 4, 8, 16, 32, 64, 128},
     * **1**: White
 */
 /**************************************************************************/
-// void Adafruit_SharpMem::drawPixel(int16_t x, int16_t y, uint16_t color) {
-//   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
-//     return;
+void Adafruit_SharpMem::drawPixel(int16_t x, int16_t y, uint16_t color) {
+  if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
+    return;
 
-//   switch (rotation) {
-//   case 1:
-//     _swap_int16_t(x, y);
-//     x = WIDTH - 1 - x;
-//     break;
-//   case 2:
-//     x = WIDTH - 1 - x;
-//     y = HEIGHT - 1 - y;
-//     break;
-//   case 3:
-//     _swap_int16_t(x, y);
-//     y = HEIGHT - 1 - y;
-//     break;
-//   }
-//   for (int i = 0; i < _color_depth_bits; i++) {
-//     if (color & set[i]) {
-//       sharpmem_buffer[((y * WIDTH + x) * _color_depth_bits + i) / 8] |=
-//           pgm_read_byte(&set[(x * _color_depth_bits + i) & 7]);
-//     } else {
-//       sharpmem_buffer[((y * WIDTH + x) * _color_depth_bits + i) / 8] &=
-//           pgm_read_byte(&clr[(x * _color_depth_bits + i) & 7]);
-//     }
-//   }
-// }
+  switch (rotation) {
+  case 1:
+    _swap_int16_t(x, y);
+    x = WIDTH - 1 - x;
+    break;
+  case 2:
+    x = WIDTH - 1 - x;
+    y = HEIGHT - 1 - y;
+    break;
+  case 3:
+    _swap_int16_t(x, y);
+    y = HEIGHT - 1 - y;
+    break;
+  }
+  for (int i = 0; i < _color_depth_bits; i++) {
+    if (color & set[i]) {
+      sharpmem_buffer[((y * WIDTH + x) * _color_depth_bits + i) / 8] |=
+          pgm_read_byte(&set[(x * _color_depth_bits + i) & 7]);
+    } else {
+      sharpmem_buffer[((y * WIDTH + x) * _color_depth_bits + i) / 8] &=
+          pgm_read_byte(&clr[(x * _color_depth_bits + i) & 7]);
+    }
+  }
+}
 
 /**************************************************************************/
 /*!
@@ -196,30 +192,30 @@ static const uint8_t set[] = {1, 2, 4, 8, 16, 32, 64, 128},
     @return     1 if the pixel is enabled, 0 if disabled
 */
 /**************************************************************************/
-// uint8_t Adafruit_SharpMem::getPixel(uint16_t x, uint16_t y) {
-//   if ((x >= _width) || (y >= _height))
-//     return 0; // <0 test not needed, unsigned
+uint8_t Adafruit_SharpMem::getPixel(uint16_t x, uint16_t y) {
+  if ((x >= _width) || (y >= _height))
+    return 0; // <0 test not needed, unsigned
 
-//   switch (rotation) {
-//   case 1:
-//     _swap_uint16_t(x, y);
-//     x = WIDTH - 1 - x;
-//     break;
-//   case 2:
-//     x = WIDTH - 1 - x;
-//     y = HEIGHT - 1 - y;
-//     break;
-//   case 3:
-//     _swap_uint16_t(x, y);
-//     y = HEIGHT - 1 - y;
-//     break;
-//   }
+  switch (rotation) {
+  case 1:
+    _swap_uint16_t(x, y);
+    x = WIDTH - 1 - x;
+    break;
+  case 2:
+    x = WIDTH - 1 - x;
+    y = HEIGHT - 1 - y;
+    break;
+  case 3:
+    _swap_uint16_t(x, y);
+    y = HEIGHT - 1 - y;
+    break;
+  }
 
-//   return sharpmem_buffer[(y * WIDTH + x) * _color_depth_bits / 8] &
-//                  pgm_read_byte(&set[x * _color_depth_bits & 7])
-//              ? 1
-//              : 0;
-// }
+  return sharpmem_buffer[(y * WIDTH + x) * _color_depth_bits / 8] &
+                 pgm_read_byte(&set[x * _color_depth_bits & 7])
+             ? 1
+             : 0;
+}
 
 /**************************************************************************/
 /*!
@@ -227,9 +223,7 @@ static const uint8_t set[] = {1, 2, 4, 8, 16, 32, 64, 128},
 */
 /**************************************************************************/
 void Adafruit_SharpMem::clearDisplay() {
-  // eggfly
-  // memset(sharpmem_buffer, 0xff, (WIDTH * HEIGHT * _color_depth_bits) / 8);
-  memset(sharpmem_buffer, 0x00, (WIDTH * HEIGHT * _color_depth_bits) / 8);
+  memset(sharpmem_buffer, 0xff, (WIDTH * HEIGHT * _color_depth_bits) / 8);
 
   spidev->beginTransaction();
   // Send the clear screen command rather than doing a HW refresh (quicker)
