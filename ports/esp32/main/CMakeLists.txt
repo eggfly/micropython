@@ -75,6 +75,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/mpnimbleport.c
     ${PROJECT_DIR}/modsocket.c
     ${PROJECT_DIR}/modesp.c
+    ${PROJECT_DIR}/modfibonacci.c
     ${PROJECT_DIR}/esp32_nvs.c
     ${PROJECT_DIR}/esp32_partition.c
     ${PROJECT_DIR}/esp32_rmt.c
@@ -85,6 +86,30 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/mpthreadport.c
     ${PROJECT_DIR}/machine_rtc.c
     ${PROJECT_DIR}/machine_sdcard.c
+
+
+    ${PROJECT_DIR}/Adafruit_MP3/src/bitstream.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/buffers.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/dct32.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/dequant.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/dqchan.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/huffman.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/hufftabs.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/imdct.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/mp3dec.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/mp3tabs.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/polyphase.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/scalfact.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/stproc.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/subband.c
+    ${PROJECT_DIR}/Adafruit_MP3/src/trigtabs.c
+
+
+    ${PROJECT_DIR}/circuitpython-ports/shared-bindings/audiomp3/MP3Decoder.c
+    ${PROJECT_DIR}/circuitpython-ports/shared-bindings/audiomp3/__init__.c
+    ${PROJECT_DIR}/circuitpython-ports/shared-module/audiomp3/MP3Decoder.c
+    ${PROJECT_DIR}/circuitpython-ports/shared-module/audiomp3/__init__.c
+
 )
 
 set(MICROPY_SOURCE_QSTR
