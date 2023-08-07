@@ -1,6 +1,7 @@
 #define MICROPY_PY_BTREE (1)
 
 #include "py/dynruntime.h"
+// #include "py/builtin.h"
 // #include "shared-bindings/audiomp3/MP3Decoder.h"
 #include <unistd.h>
 
@@ -65,10 +66,29 @@ mp_obj_type_t mp3decoder_mp3file_type;
 mp_map_elem_t audiomp3_mp3file_locals_dict_table[0];
 STATIC MP_DEFINE_CONST_DICT(audiomp3_mp3file_locals_dict, audiomp3_mp3file_locals_dict_table);
 
+mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
+    mp_obj_t args[2];
+    args[0] = arg1;
+    args[1] = arg2;
+    return mp_call_function_n_kw(fun, 2, 0, args);
+}
 
 STATIC mp_obj_t mp3decoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 4, 5, false);
+    mp_obj_t arg = args[0];
 
+    if (mp_obj_is_str(arg)) {
+        // mp_printf()
+        mp_obj_t builtin_open_obj = mp_load_name(MP_QSTR_my_foo_callback);
+        mp_printf(MICROPY_ERROR_PRINTER, "builtin_open_obj=%x\n", builtin_open_obj);
+        // const mp_obj_type_t* t = mp_fun_table.obj_get_type(builtin_open_obj);
+        // const char * type_str = mp_obj_get_type_str(builtin_open_obj);
+        mp_printf(MICROPY_ERROR_PRINTER, "mp_obj_is_str() is true, arg=%x, open=%x\n", arg, builtin_open_obj);
+        arg = mp_call_function_2(builtin_open_obj, arg, MP_OBJ_NEW_QSTR(MP_QSTR_rb));
+        mp_printf(MICROPY_ERROR_PRINTER, "mp_obj_is_str() is true, arg=%x, arg.type=%x\n", arg, ((mp_obj_base_t *)MP_OBJ_TO_PTR(arg))->type);
+    } else {
+        mp_printf(MICROPY_ERROR_PRINTER, "mp_obj_is_str() is false\n");
+    }
     // mp_obj_framebuf_t *o = mp_obj_malloc(mp_mp3, type);
     // o->buf_obj = args[0];
 
@@ -106,7 +126,7 @@ STATIC mp_obj_t mp3decoder_make_new(const mp_obj_type_t *type, size_t n_args, si
     // }
 
     // return MP_OBJ_FROM_PTR(o);
-    return mp_obj_new_int(128);
+    return arg;
 }
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
@@ -115,7 +135,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp3decoder_mp3file_type.base.type = (void*)&mp_fun_table.type_type;
     mp3decoder_mp3file_type.name = MP_QSTR_MP3Decoder;
     // btree_type.base.type = (void*)&mp_fun_table.type_type;
-mp3decoder_mp3file_type.make_new =  mp3decoder_make_new;
+    mp3decoder_mp3file_type.make_new =  mp3decoder_make_new;
     mp3decoder_mp3file_type.locals_dict = (void*)&audiomp3_mp3file_locals_dict;
     // audiomp3_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_close), MP_OBJ_FROM_PTR(&btree_close_obj) };
     mp_store_global(MP_QSTR_MP3Decoder, MP_OBJ_FROM_PTR(&mp3decoder_mp3file_type));
