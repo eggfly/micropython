@@ -30,6 +30,8 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 
+#include <math.h>
+
 #if MICROPY_PY_FRAMEBUF
 
 #include "extmod/font_petme128_8x8.h"
@@ -685,6 +687,130 @@ STATIC mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_poly_obj, 5, 6, framebuf_poly);
 #endif // MICROPY_PY_ARRAY && !MICROPY_ENABLE_DYNRUNTIME
 
+STATIC void rotate(mp_obj_framebuf_t *self, mp_obj_framebuf_t *source, mp_float_t angle) {
+    // Calculate sine and cosine of angle.
+    float rad = (float)angle * (float)M_PI / 180.0f;
+    double cos_angle = cos(rad);
+    double sin_angle = sin(rad);
+
+    // Calculate center of source framebuf.
+    float center_x = source->width / 2.0f;
+    float center_y = source->height / 2.0f;
+
+    // Rotate each pixel using bilinear interpolation.
+    for (mp_int_t y = 0; y < source->height; y++) {
+        for (mp_int_t x = 0; x < source->width; x++) {
+            // Calculate coordinates of rotated pixel.
+            float x_rot = (x - center_x) * cos_angle - (y - center_y) * sin_angle + center_x;
+            float y_rot = (x - center_x) * sin_angle + (y - center_y) * cos_angle + center_y;
+            // x_rot += 0.5f; // Add 0.5 for proper rounding when converting to int
+            // y_rot += 0.5f; // Add 0.5 for proper rounding when converting to int
+            // Perform bilinear interpolation to get the color of the rotated pixel.
+            int x_int = (int)x_rot;
+            int y_int = (int)y_rot;
+            if (x_int >= 0 && x_int + 1 < source->width && y_int >= 0 && y_int + 1 < source->height) {
+                float x_frac = x_rot - x_int;
+                float y_frac = y_rot - y_int;
+
+                mp_printf(&mp_plat_print, "%f,%f,%f,%f,%d,%d\n", rad, angle, x_frac, y_frac, x_int, y_int);
+                uint16_t col00 = getpixel(source, x_int, y_int);
+                uint16_t col01 = getpixel(source, x_int + 1, y_int);
+                uint16_t col10 = getpixel(source, x_int, y_int + 1);
+                uint16_t col11 = getpixel(source, x_int + 1, y_int + 1);
+
+                uint8_t r = (int16_t)((1.0f - x_frac) * (1.0f - y_frac) * ((col00 >> 11) & 0x1F) + x_frac * (1.0f - y_frac) * ((col01 >> 11) & 0x1F) + (1.0f - x_frac) * y_frac * ((col10 >> 11) & 0x1F) + x_frac * y_frac * ((col11 >> 11) & 0x1F));
+                uint8_t g = (int16_t)((1.0f - x_frac) * (1.0f - y_frac) * ((col00 >> 5) & 0x3F) + x_frac * (1.0f - y_frac) * ((col01 >> 5) & 0x3F) + (1.0f - x_frac) * y_frac * ((col10 >> 5) & 0x3F) + x_frac * y_frac * ((col11 >> 5) & 0x3F));
+                uint8_t b = (int16_t)((1.0f - x_frac) * (1.0f - y_frac) * (col00 & 0x1F) + x_frac * (1.0f - y_frac) * (col01 & 0x1F) + (1.0f - x_frac) * y_frac * (col10 & 0x1F) + x_frac * y_frac * (col11 & 0x1F));
+
+                uint16_t result = (r << 11) | (g << 5) | b;
+                setpixel(self, x, y, result);
+            }
+        }
+    }
+}
+
+
+#define RGB565_RED(color) ((color & 0xF800) >> 11)
+#define RGB565_GREEN(color) ((color & 0x07E0) >> 5)
+#define RGB565_BLUE(color) ((color & 0x001F))
+
+#define RGB565(r, g, b) ((r << 11) | (g << 5) | b)
+#define QLI(dx, dy, col00, col01, col10, col11) ( \
+                    (1 - dx) * (1 - dy) * col00 + \
+                    (1 - dx) * dy * col01 + \
+                    dx * (1 - dy) * col10 + \
+                    dx * dy * col11 \
+                )
+
+STATIC mp_obj_t framebuf_rotate(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
+    if (source_in == MP_OBJ_NULL) {
+        mp_raise_TypeError(NULL);
+    }
+    mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(source_in);
+
+    mp_float_t angle = mp_obj_get_float(args_in[2]);
+
+    // Calculate the center of the source framebuf
+    mp_int_t center_x = source->width / 2;
+    mp_int_t center_y = source->height / 2;
+    double cos_angle = cos(angle);
+    double sin_angle = sin(angle);
+    // Iterate over each pixel in the destination framebuf
+    for (int y = 0; y < self->height; y++) {
+        for (int x = 0; x < self->width; x++) {
+            // Calculate the corresponding position in the source framebuf after rotation
+            mp_float_t src_x = (x - self->width / 2) * cos_angle - (y - self->height / 2) * sin_angle + center_x;
+            mp_float_t src_y = (x - self->width / 2) * sin_angle + (y - self->height / 2) * cos_angle + center_y;
+
+            // Perform bilinear interpolation to get the color value
+            int x0 = (int)src_x;
+            int y0 = (int)src_y;
+            int x1 = x0 + 1;
+            int y1 = y0 + 1;
+
+            if (x0 >= 0 && x1 < source->width && y0 >= 0 && y1 < source->height) {
+                mp_float_t dx = src_x - x0;
+                mp_float_t dy = src_y - y0;
+
+                uint32_t col00 = getpixel(source, x0, y0);
+                uint32_t col00_r = RGB565_RED(col00);
+                uint32_t col00_g = RGB565_GREEN(col00);
+                uint32_t col00_b = RGB565_BLUE(col00);
+
+                uint32_t col01 = getpixel(source, x0, y1);
+                uint32_t col01_r = RGB565_RED(col01);
+                uint32_t col01_g = RGB565_GREEN(col01);
+                uint32_t col01_b = RGB565_BLUE(col01);
+
+                uint32_t col10 = getpixel(source, x1, y0);
+                uint32_t col10_r = RGB565_RED(col10);
+                uint32_t col10_g = RGB565_GREEN(col10);
+                uint32_t col10_b = RGB565_BLUE(col10);
+
+                uint32_t col11 = getpixel(source, x1, y1);
+                uint32_t col11_r = RGB565_RED(col11);
+                uint32_t col11_g = RGB565_GREEN(col11);
+                uint32_t col11_b = RGB565_BLUE(col11);
+
+                uint32_t col_r = QLI(dx, dy, col00_r, col01_r, col10_r, col11_r);
+                uint32_t col_g = QLI(dx, dy, col00_g, col01_g, col10_g, col11_g);
+                uint32_t col_b = QLI(dx, dy, col00_b, col01_b, col10_b, col11_b);
+                uint32_t col = RGB565(col_r, col_g, col_b);
+                mp_printf(&mp_plat_print, "%x,%x,%x:%x,%x,%x\n", col00_r, col00_g, col00_b, col_r, col_g, col_b);
+
+                setpixel(self, x, y, col);
+            }
+        }
+    }
+    // rotate(self, source, angle);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rotate_obj, 3, 3, framebuf_rotate);
+
+
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
     mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
@@ -836,6 +962,7 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&framebuf_poly_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rotate), MP_ROM_PTR(&framebuf_rotate_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
 };
