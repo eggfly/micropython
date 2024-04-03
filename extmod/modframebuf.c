@@ -723,7 +723,7 @@ STATIC void rotate(mp_obj_framebuf_t *self, mp_obj_framebuf_t *source, mp_float_
                 uint8_t b = (int16_t)((1.0f - x_frac) * (1.0f - y_frac) * (col00 & 0x1F) + x_frac * (1.0f - y_frac) * (col01 & 0x1F) + (1.0f - x_frac) * y_frac * (col10 & 0x1F) + x_frac * y_frac * (col11 & 0x1F));
 
                 uint16_t result = (r << 11) | (g << 5) | b;
-                setpixel(self, x, y, result);
+                setpixel_checked(self, x, y, result, true);
             }
         }
     }
@@ -741,6 +741,8 @@ STATIC void rotate(mp_obj_framebuf_t *self, mp_obj_framebuf_t *source, mp_float_
                     dx * (1 - dy) * col10 + \
                     dx * dy * col11 \
                 )
+
+#define SWAP_UINT16(value) ((value >> 8) | (value << 8))
 
 STATIC mp_obj_t framebuf_rotate(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
@@ -763,33 +765,31 @@ STATIC mp_obj_t framebuf_rotate(size_t n_args, const mp_obj_t *args_in) {
             // Calculate the corresponding position in the source framebuf after rotation
             mp_float_t src_x = (x - self->width / 2) * cos_angle - (y - self->height / 2) * sin_angle + center_x;
             mp_float_t src_y = (x - self->width / 2) * sin_angle + (y - self->height / 2) * cos_angle + center_y;
-
             // Perform bilinear interpolation to get the color value
             int x0 = (int)src_x;
             int y0 = (int)src_y;
             int x1 = x0 + 1;
             int y1 = y0 + 1;
-
             if (x0 >= 0 && x1 < source->width && y0 >= 0 && y1 < source->height) {
                 mp_float_t dx = src_x - x0;
                 mp_float_t dy = src_y - y0;
 
-                uint32_t col00 = getpixel(source, x0, y0);
+                uint32_t col00 = SWAP_UINT16(getpixel(source, x0, y0));
                 uint32_t col00_r = RGB565_RED(col00);
                 uint32_t col00_g = RGB565_GREEN(col00);
                 uint32_t col00_b = RGB565_BLUE(col00);
 
-                uint32_t col01 = getpixel(source, x0, y1);
+                uint32_t col01 = SWAP_UINT16(getpixel(source, x0, y1));
                 uint32_t col01_r = RGB565_RED(col01);
                 uint32_t col01_g = RGB565_GREEN(col01);
                 uint32_t col01_b = RGB565_BLUE(col01);
 
-                uint32_t col10 = getpixel(source, x1, y0);
+                uint32_t col10 = SWAP_UINT16(getpixel(source, x1, y0));
                 uint32_t col10_r = RGB565_RED(col10);
                 uint32_t col10_g = RGB565_GREEN(col10);
                 uint32_t col10_b = RGB565_BLUE(col10);
 
-                uint32_t col11 = getpixel(source, x1, y1);
+                uint32_t col11 = SWAP_UINT16(getpixel(source, x1, y1));
                 uint32_t col11_r = RGB565_RED(col11);
                 uint32_t col11_g = RGB565_GREEN(col11);
                 uint32_t col11_b = RGB565_BLUE(col11);
@@ -797,8 +797,10 @@ STATIC mp_obj_t framebuf_rotate(size_t n_args, const mp_obj_t *args_in) {
                 uint32_t col_r = QLI(dx, dy, col00_r, col01_r, col10_r, col11_r);
                 uint32_t col_g = QLI(dx, dy, col00_g, col01_g, col10_g, col11_g);
                 uint32_t col_b = QLI(dx, dy, col00_b, col01_b, col10_b, col11_b);
-                uint32_t col = RGB565(col_r, col_g, col_b);
-                mp_printf(&mp_plat_print, "%x,%x,%x:%x,%x,%x\n", col00_r, col00_g, col00_b, col_r, col_g, col_b);
+                uint32_t col = SWAP_UINT16(RGB565(col_r, col_g, col_b));
+                // if (x < 10 && y < 10) {
+                //     mp_printf(&mp_plat_print, "x=%d,y=%d,x0=%d,y0=%d,angle=%f,%d,self=0x%x,0x%x=0x%x,0x%x,0x%x:0x%x,0x%x,0x%x\n", x,y,x0,y0, angle, source->format, self_col, col00, col00_r, col00_g, col00_b, col_r, col_g, col_b);
+                // }
 
                 setpixel(self, x, y, col);
             }
