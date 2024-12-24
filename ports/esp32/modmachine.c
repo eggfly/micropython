@@ -30,12 +30,14 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
+// eggfly mod: Haha, I can use Arduino.h here!
+#include <Arduino.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
-
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -242,6 +244,9 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 
 void machine_init(void) {
     is_soft_reset = 0;
+    // Cannot do this temperarily:
+    // Serial.println();
+    delay(100);
 }
 
 void machine_deinit(void) {

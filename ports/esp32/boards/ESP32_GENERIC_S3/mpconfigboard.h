@@ -9,3 +9,6 @@
 
 #define MICROPY_HW_I2C0_SCL                 (9)
 #define MICROPY_HW_I2C0_SDA                 (8)
+
+#define CONFIG_TINYUSB_DESC_USE_ESPRESSIF_VID (1)
+#define CONFIG_TINYUSB_DESC_USE_DEFAULT_PID (1)
