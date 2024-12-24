@@ -41,6 +41,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp_store_global(MP_QSTR_MVLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB));
     mp_store_global(MP_QSTR_MONO_VLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB));
     mp_store_global(MP_QSTR_RGB565, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565));
+    mp_store_global(MP_QSTR_RGB222, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB222));
     mp_store_global(MP_QSTR_GS2_HMSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS2_HMSB));
     mp_store_global(MP_QSTR_GS4_HMSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS4_HMSB));
     mp_store_global(MP_QSTR_GS8, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS8));

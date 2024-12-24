@@ -247,6 +247,8 @@ void machine_init(void) {
     // Cannot do this temperarily:
     // Serial.println();
     delay(100);
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
 }
 
 void machine_deinit(void) {
