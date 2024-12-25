@@ -103,6 +103,8 @@ list(APPEND MICROPY_SOURCE_PORT
     mphalport.c
     fatfs_port.c
     help.c
+    # eggfly added
+    ls012b7dd06_driver.cpp
     machine_bitstream.c
     machine_timer.c
     machine_pin.c

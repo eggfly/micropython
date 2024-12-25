@@ -6,3 +6,5 @@ dependencies:
   idf:
     version: ">=5.1.2"
   espressif/arduino-esp32: ^3.0.0
+  #m5stack/m5gfx: ^0.1.17
+  fasani/adafruit_gfx: ^1.7.8

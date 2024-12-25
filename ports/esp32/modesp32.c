@@ -42,6 +42,8 @@
 #include "modmachine.h"
 #include "machine_rtc.h"
 #include "modesp32.h"
+#include "extmod/modframebuf.h"
+#include "ls012b7dd06_driver.h"
 
 // These private includes are needed for idf_heap_info.
 #define MULTI_HEAP_FREERTOS
@@ -211,6 +213,34 @@ static mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
     return heap_list;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
+
+// eggfly modify start
+static mp_obj_t refresh_screen(mp_obj_t framebuffer_obj) {
+    mp_obj_framebuf_t *fb = (mp_obj_framebuf_t *)MP_OBJ_FROM_PTR(framebuffer_obj);
+
+    if (fb->width != LS012B7DD06_WIDTH || fb->height != LS012B7DD06_HEIGHT) {
+        mp_raise_ValueError("Framebuffer size does not match screen size");
+        // no need to return;
+    }
+
+    if (FRAMEBUF_RGB222 != fb->format) {
+        mp_raise_ValueError("Framebuffer format does not match screen format");
+        // no need to return;
+    }
+
+    uint8_t *buffer = fb->buf;
+    if (buffer == NULL) {
+        mp_raise_ValueError("Framebuffer buffer is null");
+        // no need to return;
+    }
+
+    // 在此处插入刷屏代码
+    // 比如通过DMA或其他方式将buffer中的数据推送到屏幕
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(refresh_screen_obj, refresh_screen);
+// eggfly modify end
 
 static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
